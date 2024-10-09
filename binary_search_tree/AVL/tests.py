@@ -71,12 +71,39 @@ class TestDict(unittest.TestCase):
 def myTests():
     tree = Dict()
     items = set()
+    map = {}
     for i in range(1, 232122):
         item = random.randint(1, 2312233)
         tree[item] = random.randint(1, 3221213)
+        map[item] = tree[item]
         items.add(item)
 
+        flag = random.randint(1, 10)
+        if flag >= 8:
+            del tree[item]
+            del map[item]
+            items.remove(item)
+
     print(tree.is_balanced(tree.root))
+    print(len(tree) == len(items))
+
+    flag = True 
+    for x in map:
+        if map[x] != tree[x]:
+            flag = False
+
+    print(flag)
+
+    for x in map:
+        map[x] = random.randint(1, 13123213)
+        tree[x] = map[x]
+
+    flag = True 
+    for x in map:
+        if map[x] != tree[x]:
+            flag = False
+
+    print(flag)
 
     #print(items)
     for item in items:
@@ -86,11 +113,11 @@ def myTests():
 
     items = set()
     arr = []
-    for i in range(1, 3000):
+    for i in range(1, 300000):
         arr.append(i)
         tree[i] = ""
         items.add(i)
-
+    
     random.shuffle(arr)
     for i in arr[:random.randint(1, 3000)]:
         del tree[i]
@@ -119,7 +146,20 @@ def AVL_tests():
     tree[5] = 124
     tree[2] = 123
     tree[1] = 13123
+    tree[7] = 213
+    tree[8] = 213
+    tree[9] = 213
     tree.show()
+    print(tree.is_balanced(tree.root))
+
+    items = [40, 30, 25, 15, 10, 5, 2, 1, 7, 8, 9]
+    random.shuffle(items)
+
+    print(items)
+    for item in items:
+        print("Deleting: ", item, "...")
+        tree.show()
+        del tree[item]
 
 if __name__ == "__main__":
     #AVL_tests()

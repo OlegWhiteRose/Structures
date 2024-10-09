@@ -23,6 +23,8 @@ class Dict:
 
 
   def bfactor(self, p):
+      if p is None:
+          return 0
       return self.height(p.right) - self.height(p.left)
 
   
@@ -45,7 +47,7 @@ class Dict:
       
       self.produce_height(p)
       self.produce_height(q)
-
+      
       return q
 
   
@@ -67,36 +69,35 @@ class Dict:
         
 
   def balance(self, p):
+      self.produce_height(p)
+
+      if abs(self.bfactor(p)) < 2:
+          return p
+      
       parent = None
       if p.parent_key is not None:
-        parent = self.find_parent(p.parent_key)
+        parent = self.find_parent(p.parent_key, False)
         if parent.right is not None and parent.right.key == p.key:
-            parent = [parent, "r"]
+            parent = (parent, "r")
         elif parent.left is not None and parent.left.key == p.key:
-            parent = [parent, "l"]
-
-      self.produce_height(p)
+            parent = (parent, "l")
     
       if self.bfactor(p) == 2:
           if self.bfactor(p.right) < 0:
-              temp = self.rotate_right(p.right)
-              p.right = temp
-              temp.parent_key = p.key
+              p.right = self.rotate_right(p.right)
           
           p = self.rotate_left(p)
       
       if self.bfactor(p) == -2:
           if self.bfactor(p.left) > 0:
-              temp = self.rotate_left(p.left)
-              p.left = temp
-              temp.parent_key = p.key
+              p.left = self.rotate_left(p.left)
           
           p = self.rotate_right(p)
-      
+
       if parent is None:
           self.root = p
           p.parent_key = None
-          return
+          return self.root
       
       if parent[1] == "r":
           parent[0].right = p
@@ -104,50 +105,54 @@ class Dict:
       if parent[1] == "l":
           parent[0].left = p
           p.parent_key = parent[0].key
+      
+      return p
   
   
   def is_balanced(self, v):
       if v is None:
           return True
-
-      if abs(self.bfactor(v)) >= 2:
+      
+      if abs(self.bfactor(v)) == 2:
           return False
       
       return self.is_balanced(v.left) and self.is_balanced(v.right)
 
 
-  def find_parent(self, key):
-        way = []
-        
+  def balance_way(self, res, way, flag):
+      if not flag:
+          return res
+
+      for v in way[::-1]:
+          self.balance(v)
+
+      return res
+
+
+  def find_parent(self, key, flag = True):
+        way = [self.root]
         parent = None
         cur = self.root
         while cur is not None:
             way.append(cur)
-
             if key < cur.key:
                 if cur.left is None:
-                    return cur
+                    return self.balance_way(cur, way, flag)
 
                 parent = cur
                 cur = cur.left
 
             elif key > cur.key:
                 if cur.right is None:
-                    return cur
+                    return self.balance_way(cur, way, flag)
 
                 parent = cur
                 cur = cur.right
 
             elif key == cur.key:
-                return cur
-            
-        for v in way[::-1]:
-            self.produce_height(v)
-        for v in way:
-            self.balance(v)
+                return self.balance_way(cur, way, flag)
 
-
-        return parent
+        return self.balance_way(parent, way, flag)
   
     
   def __setitem__(self, key, value):
@@ -156,11 +161,12 @@ class Dict:
             self.size = 1
             return
       
-        parent = self.find_parent(key)
+        self.find_parent(key) # balancing
+        parent = self.find_parent(key, False)
         if parent is not None and parent.key == key:
             parent.value = value
             return
-    
+
         new_node = Node(key, value)
         new_node.parent_key = parent.key
         if key < parent.key:
@@ -180,7 +186,8 @@ class Dict:
     
     
   def __delitem__(self, key):
-        parent = self.find_parent(key)
+        parent = self.find_parent(key, False)
+        saved_bro = None
         
         if parent is None or parent.key != key:
             raise KeyError(f"Key {key} not found")
@@ -196,13 +203,15 @@ class Dict:
             while node.left is not None:
               prev = node
               node = node.left
-            
+
             prev.left = node.right
             if prev.left is not None:
                 prev.left.parent_key = prev.key
+                
             node.left = parent.left
             node.right = parent.right
-            
+
+            saved_bro = prev
           
         elif parent.left is not None:
           node = parent.left
@@ -219,8 +228,11 @@ class Dict:
 
         if parent.key == self.root.key:
             self.root = node
+            if node is not None:
+                node.parent_key = None
+                self.balance(node)
         else:
-          root = self.find_parent(parent.parent_key)
+          root = self.find_parent(parent.parent_key, False)
           if root.right is not None and root.right.key == parent.key:
             root.right = node
           elif root.left is not None and root.left.key == parent.key:
@@ -230,7 +242,14 @@ class Dict:
           
           if node is not None:
             node.parent_key = root.key  
-        
+            self.balance(node)
+          
+          self[root.key] = root.value # balancing
+
+
+        if saved_bro is not None:
+           self.find_parent(saved_bro.key)
+
         self.size -= 1
 
     
