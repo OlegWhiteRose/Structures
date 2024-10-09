@@ -71,10 +71,13 @@ class TestDict(unittest.TestCase):
 def myTests():
     tree = Dict()
     items = set()
-    for i in range(1, 23122):
-        item = random.randint(1, 23123)
-        tree[item] = random.randint(1, 32123)
+    for i in range(1, 232122):
+        item = random.randint(1, 2312233)
+        tree[item] = random.randint(1, 3221213)
         items.add(item)
+
+    print(tree.is_balanced(tree.root))
+
     #print(items)
     for item in items:
         #print(f"Doing {item}")

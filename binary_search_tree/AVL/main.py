@@ -104,14 +104,25 @@ class Dict:
       if parent[1] == "l":
           parent[0].left = p
           p.parent_key = parent[0].key
+  
+  
+  def is_balanced(self, v):
+      if v is None:
+          return True
+
+      if abs(self.bfactor(v)) >= 2:
+          return False
+      
+      return self.is_balanced(v.left) and self.is_balanced(v.right)
 
 
-  def find_parent(self, key, way = None):
+  def find_parent(self, key):
+        way = []
+        
         parent = None
         cur = self.root
         while cur is not None:
-            if way is not None:
-                way.append(cur)
+            way.append(cur)
 
             if key < cur.key:
                 if cur.left is None:
@@ -129,6 +140,12 @@ class Dict:
 
             elif key == cur.key:
                 return cur
+            
+        for v in way[::-1]:
+            self.produce_height(v)
+        for v in way:
+            self.balance(v)
+
 
         return parent
   
@@ -139,8 +156,7 @@ class Dict:
             self.size = 1
             return
       
-        way = []
-        parent = self.find_parent(key, way)
+        parent = self.find_parent(key)
         if parent is not None and parent.key == key:
             parent.value = value
             return
@@ -151,11 +167,7 @@ class Dict:
             parent.left = new_node
         else:
             parent.right = new_node
-        
-        for v in way[::-1]:
-            self.produce_height(v)
-        for v in way:
-            self.balance(v)   
+
         self.size += 1
 
     
