@@ -73,7 +73,7 @@ class Dict:
           return
 
       self.produce_height(p)
-
+      
       if abs(self.bfactor(p)) < 2:
           return self.balance(p.parent)
       
@@ -221,9 +221,9 @@ class Dict:
             self.root = node
             if node is not None:
                 node.parent = None
-                self.balance(node) 
+                self.balance(node)
         else:
-          root = self.find_parent(parent.parent.key)
+          root = parent.parent
           if root.right is not None and root.right.key == parent.key:
             root.right = node
           elif root.left is not None and root.left.key == parent.key:
@@ -232,8 +232,8 @@ class Dict:
             raise RuntimeError("Something GO FUCKING WRONG")
           
           if node is not None:
-            node.parent = root  
-            self.balance(node)
+            node.parent = root 
+            self.balance(node) 
           
           self.balance(root)
 
